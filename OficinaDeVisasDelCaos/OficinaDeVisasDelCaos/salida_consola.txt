@@ -1,0 +1,80 @@
+
+==============================================================
+CASO 1 - God Object
+==============================================================
+-- HEREDADA: OficinaDeTodo (Ramiro lo hace todo)
+  [Ramiro] Cobrando $190.0 a Ana Torres
+  [Ramiro] Guardando expediente de Ana Torres
+  [Ramiro] Correo para Ana Torres: su visa va en camino
+-- RESCATADA: una clase por responsabilidad
+  [CajaDeCobros] Cobrando $190.0 a Ana Torres
+  [ArchivoDeExpedientes] Guardando expediente de Ana Torres
+  [NotificadorDeCorreo] Correo para Ana Torres: su visa va en camino
+Ambas aprueban el tramite: true
+
+==============================================================
+CASO 2 - Copy-Paste Programming (base 50 -> 60)
+==============================================================
+-- HEREDADA: precios con base 50 (3 meses)
+  turista=160.0  estudiante=80.0  trabajo=240.0
+  Lugares editados en la version clonada: 3
+  turista=190.0  estudiante=95.0  trabajo=285.0
+-- RESCATADA (Strategy): precios con base 50 (3 meses)
+  turista=160.0  estudiante=80.0  trabajo=240.0
+  Lugares editados en la version Strategy: 1
+  turista=190.0  estudiante=95.0  trabajo=285.0
+El precio final coincide en ambas: true
+
+==============================================================
+CASO 3 - Magic Numbers
+==============================================================
+-- HEREDADA: evaluar(2, 20)
+  APROBADA
+-- RESCATADA: evaluar(TipoVisa.ESTUDIANTE, 20)
+  APROBADA
+-- HEREDADA: evaluar(9, 20)  (tipo inexistente)
+  RECHAZADA   <- rechazo en silencio, sin saber por que
+-- RESCATADA: tipo 9
+  ERROR CLARO: Tipo de visa desconocido: 9. Validos: 1=TURISTA, 2=ESTUDIANTE, 3=TRABAJO
+
+==============================================================
+CASO 4 - Acoplamiento fuerte
+==============================================================
+-- HEREDADA: SolicitudAcoplada.cancelar()
+  [Correo] Aviso de cancelacion enviado
+  [Citas] Cupo liberado en la agenda
+  Estado: CANCELADA
+  !!! REEMBOLSO OLVIDADO: nadie llamo a Pagos
+-- RESCATADA: Solicitud + Observer
+  [CajaDeCobros] Cobrando $190.0 a Luis Perez
+  [NotificadorDeCorreo] Correo para Luis Perez: su solicitud fue cancelada
+  [AgendaDeCitas] Cupo liberado (solicitud S-4)
+  [CajaDeCobros] Reembolso de $190.0 (solicitud S-4)
+  Estado: CANCELADA (la solicitud nunca conocio a los servicios)
+
+==============================================================
+CASO 5 - Integracion: solicitar, evaluar, cobrar y cancelar
+==============================================================
+-- 1) Solicitar
+  Solicitud S-5 creada para Marta Gomez [ACTIVA]
+-- 2) Evaluar (TRABAJO, 30 anios)
+  Resultado: APROBADA
+-- 3) Cobrar (3 meses)
+  [CajaDeCobros] Cobrando $240.0 a Marta Gomez
+  [ArchivoDeExpedientes] Guardando expediente de Marta Gomez
+  [NotificadorDeCorreo] Correo para Marta Gomez: su visa va en camino
+-- 4) Cancelar
+  [NotificadorDeCorreo] Correo para Marta Gomez: su solicitud fue cancelada
+  [AgendaDeCitas] Cupo liberado (solicitud S-5)
+  [CajaDeCobros] Reembolso de $240.0 (solicitud S-5)
+  Estado final: CANCELADA
+
+Tabla final de antipatrones capturados
++----------------------+------------------------------------+------------------------------+
+| Antipatron           | Sintoma                            | Solucion                     |
++----------------------+------------------------------------+------------------------------+
+| God Object           | Ramiro valida+cobra+guarda+avisa   | Responsabilidad unica        |
+| Copy-Paste           | Formula x3; base editada 3 veces   | Strategy (1 punto de cambio) |
+| Magic Numbers        | tipo == 3, edad > 65, 0.5          | Enum + constantes con nombre |
+| Acoplamiento fuerte  | cancelar() olvido el reembolso     | Observer (3 observadores)    |
++----------------------+------------------------------------+------------------------------+
